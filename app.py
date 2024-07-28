@@ -1,21 +1,31 @@
 from flask import Flask, render_template, request, redirect, url_for
-from database import create_database_from_csv, query_metadata, get_metadata_by_id
+from database import create_database_from_csv, query_metadata, get_metadata_by_id, filter_metadata
 import argparse
 import os
 
 app = Flask(__name__)
+db_file = 'metadata.db'  # Default database file
 
 @app.route('/')
 def index():
-    metadata = query_metadata()
+    metadata = query_metadata(db_file)
     return render_template('index.html', metadata=metadata)
 
 @app.route('/view/<int:metadata_id>')
 def view(metadata_id):
-    metadata = get_metadata_by_id(metadata_id)
+    metadata = get_metadata_by_id(metadata_id, db_file)
     if metadata is None:
         return "Metadata not found!", 404
     return render_template('view.html', metadata=metadata)
+
+@app.route('/filter', methods=['GET', 'POST'])
+def filter():
+    if request.method == 'POST':
+        field = request.form['field']
+        pattern = request.form['pattern']
+        metadata = filter_metadata(field, pattern, db_file)
+        return render_template('index.html', metadata=metadata)
+    return render_template('filter.html')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run Flask web application with SQLite database created from CSV file.')

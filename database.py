@@ -1,8 +1,8 @@
 import sqlite3
 import pandas as pd
 
-def get_db_connection():
-    conn = sqlite3.connect('metadata.db')
+def get_db_connection(db_name='metadata.db'):
+    conn = sqlite3.connect(db_name)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -27,14 +27,21 @@ def create_database_from_csv(csv_file, db_name):
     df.to_sql('pdf_metadata', conn, if_exists='append', index=False)
     conn.close()
 
-def query_metadata():
-    conn = get_db_connection()
+def query_metadata(db_name='metadata.db'):
+    conn = get_db_connection(db_name)
     metadata = conn.execute('SELECT * FROM pdf_metadata').fetchall()
     conn.close()
     return metadata
 
-def get_metadata_by_id(metadata_id):
-    conn = get_db_connection()
+def get_metadata_by_id(metadata_id, db_name='metadata.db'):
+    conn = get_db_connection(db_name)
     metadata = conn.execute('SELECT * FROM pdf_metadata WHERE id = ?', (metadata_id,)).fetchone()
+    conn.close()
+    return metadata
+
+def filter_metadata(field, pattern, db_name='metadata.db'):
+    conn = get_db_connection(db_name)
+    query = f"SELECT * FROM pdf_metadata WHERE {field} LIKE ?"
+    metadata = conn.execute(query, ('%' + pattern + '%',)).fetchall()
     conn.close()
     return metadata
