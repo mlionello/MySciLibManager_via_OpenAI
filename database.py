@@ -1,11 +1,12 @@
 import sqlite3
+import pandas as pd
 
 def get_db_connection():
     conn = sqlite3.connect('metadata.db')
     conn.row_factory = sqlite3.Row
     return conn
 
-def create_database(db_name):
+def create_database_from_csv(csv_file, db_name):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
     cursor.execute('''
@@ -21,18 +22,9 @@ def create_database(db_name):
         )
     ''')
     conn.commit()
-    conn.close()
 
-def insert_into_database(db_name, pdf_info_list):
-    conn = sqlite3.connect(db_name)
-    cursor = conn.cursor()
-    for pdf_info in pdf_info_list:
-        cursor.execute('''
-            INSERT INTO pdf_metadata (title, authors, year, keywords, main_finding, abstract, path)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (pdf_info["Title"], pdf_info["Author(s)"], pdf_info["Year"], pdf_info["Keywords"], pdf_info["Main Finding"],
-              pdf_info["One-sentence Abstract"], pdf_info["Path"]))
-    conn.commit()
+    df = pd.read_csv(csv_file)
+    df.to_sql('pdf_metadata', conn, if_exists='append', index=False)
     conn.close()
 
 def query_metadata():
