@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+input[type="file"] {
+    display: block;
+    margin: 20px auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+}
+
+td {
+    position: relative;
+}
+
+td input {
+    width: 100%;
+    box-sizing: border-box;
+    border: none;
+    padding: 4px;
+}
+
+#editCanvas {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border: 2px solid black;
+    padding: 20px;
+    z-index: 1000;
+    width: 80%;
+    height: 60%;
+}
+
+.hidden {
+    display: none;
+}
+
+textarea {
+    width: 100%;
+    height: 80%;
+    box-sizing: border-box;
+}
+
+button {
+    display: block;
+    margin: 10px auto;
+}
+
+
+</style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Editor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>CSV Editor</h1>
+    <input type="file" id="fileInput" />
+    <button id="downloadBtn">Download CSV</button>
+    <table id="csvTable"></table>
+
+    <!-- Canvas for editing -->
+    <div id="editCanvas" class="hidden">
+        <textarea id="editArea"></textarea>
+        <button id="saveEditBtn">Save</button>
+        <button id="cancelEditBtn">Cancel</button>
+    </div>
+
+    <script>
+    document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+document.getElementById('downloadBtn').addEventListener('click', downloadCSV);
+document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
+document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
+
+let csvData = [];
+let currentCell = { row: null, cell: null };
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const text = e.target.result;
+        parseCSV(text);
+    };
+    reader.readAsText(file);
+}
+
+function parseCSV(text) {
+    csvData = [];
+    const rows = text.split('\n');
+    rows.forEach(row => {
+        if (row.trim() === '') return; // Skip empty rows
+        csvData.push(parseCSVRow(row));
+    });
+    renderTable();
+}
+
+function parseCSVRow(row) {
+    const cells = [];
+    let cell = '';
+    let insideQuotes = false;
+
+    for (let i = 0; i < row.length; i++) {
+        const char = row[i];
+
+        if (char === '"') {
+            insideQuotes = !insideQuotes;
+        } else if (char === ',' && !insideQuotes) {
+            cells.push(cell);
+            cell = '';
+        } else {
+            cell += char;
+        }
+    }
+
+    cells.push(cell);
+    return cells;
+}
+
+function renderTable() {
+    const table = document.getElementById('csvTable');
+    table.innerHTML = '';
+
+    csvData.forEach((row, rowIndex) => {
+        const tr = document.createElement('tr');
+        row.forEach((cell, cellIndex) => {
+            const td = document.createElement('td');
+            if (rowIndex === 0) {
+                td.innerHTML = `<strong>${cell}</strong>`;
+            } else {
+                td.innerHTML = `<input type="text" value="${cell}" data-row="${rowIndex}" data-cell="${cellIndex}" />`;
+                td.querySelector('input').addEventListener('click', () => openEditCanvas(rowIndex, cellIndex));
+            }
+            tr.appendChild(td);
+        });
+        table.appendChild(tr);
+    });
+}
+
+function openEditCanvas(row, cell) {
+    currentCell = { row, cell };
+    const editCanvas = document.getElementById('editCanvas');
+    const editArea = document.getElementById('editArea');
+    editArea.value = csvData[row][cell];
+    editCanvas.classList.remove('hidden');
+}
+
+function saveEdit() {
+    const editArea = document.getElementById('editArea');
+    csvData[currentCell.row][currentCell.cell] = editArea.value;
+    renderTable();
+    closeEditCanvas();
+}
+
+function cancelEdit() {
+    closeEditCanvas();
+}
+
+function closeEditCanvas() {
+    const editCanvas = document.getElementById('editCanvas');
+    editCanvas.classList.add('hidden');
+}
+
+function downloadCSV() {
+    let csvContent = csvData.map(row => stringifyCSVRow(row)).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'edited.csv';
+    link.click();
+}
+
+function stringifyCSVRow(row) {
+    return row.map(cell => {
+        if (cell.includes('"') || cell.includes(',') || cell.includes('\n')) {
+            return `"${cell.replace(/"/g, '""')}"`;
+        }
+        return cell;
+    }).join(',');
+}
+
+
+    </script>
+</body>
+</html>
