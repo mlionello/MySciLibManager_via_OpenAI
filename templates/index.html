@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <title>PDF Metadata</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        function submitRanking(metadataId, ranking) {
+            document.getElementById('metadata_id').value = metadataId;
+            document.getElementById('ranking').value = ranking;
+            document.getElementById('rankingForm').submit();
+        }
+    </script>
 </head>
 <body>
     <h1>PDF Metadata</h1>
@@ -18,12 +25,14 @@
                 <th><a href="{{ url_for('index', order_by='main_finding', order_dir='ASC' if order_by != 'main_finding' else 'DESC') }}">Main Finding</a></th>
                 <th><a href="{{ url_for('index', order_by='abstract', order_dir='ASC' if order_by != 'abstract' else 'DESC') }}">Abstract</a></th>
                 <th><a href="{{ url_for('index', order_by='path', order_dir='ASC' if order_by != 'path' else 'DESC') }}">Path</a></th>
+                <th>Flag</th>
+                <th>Ranking</th>
                 <th>Action</th>
             </tr>
         </thead>
         <tbody>
             {% for item in metadata %}
-                <tr>
+                <tr style="background-color: {{ item['color_flag'] }}">
                     <td>{{ item['title'] }}</td>
                     <td>{{ item['authors'] }}</td>
                     <td>{{ item['year'] }}</td>
@@ -31,10 +40,29 @@
                     <td>{{ item['main_finding'] }}</td>
                     <td>{{ item['abstract'] }}</td>
                     <td><a href="{{ item['path'] }}" target="_blank">Link</a></td>
+                    <td>
+                        <form action="{{ url_for('update_flag') }}" method="post">
+                            <input type="hidden" name="metadata_id" value="{{ item['id'] }}">
+                            <input type="color" name="color_flag" value="{{ item['color_flag'] }}">
+                            <button type="submit">Update</button>
+                        </form>
+                    </td>
+                    <td>
+                        <div>
+                            {% for i in range(1, 6) %}
+                                <span style="cursor: pointer; color: {{ 'gold' if item['ranking'] >= i else 'gray' }};" onclick="submitRanking('{{ item['id'] }}', '{{ i }}')">&#9733;</span>
+                            {% endfor %}
+                        </div>
+                    </td>
                     <td><a href="{{ url_for('view', metadata_id=item['id']) }}">View</a></td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    <form id="rankingForm" action="{{ url_for('update_ranking') }}" method="post" style="display: none;">
+        <input type="hidden" id="metadata_id" name="metadata_id">
+        <input type="hidden" id="ranking" name="ranking">
+    </form>
 </body>
 </html>

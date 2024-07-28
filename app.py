@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from database import create_database_from_csv, query_metadata, get_metadata_by_id, filter_metadata, order_metadata
+from database import create_database_from_csv, query_metadata, get_metadata_by_id, filter_metadata, order_metadata, update_color_flag, update_ranking
 import argparse
 import os
 
@@ -28,6 +28,20 @@ def filter():
         metadata = filter_metadata(field, pattern, db_file)
         return render_template('index.html', metadata=metadata)
     return render_template('filter.html')
+
+@app.route('/update_flag', methods=['POST'])
+def update_flag():
+    metadata_id = request.form['metadata_id']
+    color_flag = request.form['color_flag']
+    update_color_flag(metadata_id, color_flag, db_file)
+    return redirect(url_for('index'))
+
+@app.route('/update_ranking', methods=['POST'])
+def update_ranking():
+    metadata_id = request.form['metadata_id']
+    ranking = request.form['ranking']
+    update_ranking(metadata_id, ranking, db_file)
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run Flask web application with SQLite database created from CSV file.')

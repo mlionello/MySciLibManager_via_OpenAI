@@ -18,12 +18,16 @@ def create_database_from_csv(csv_file, db_name):
             keywords TEXT,
             main_finding TEXT,
             abstract TEXT,
-            path TEXT
+            path TEXT,
+            color_flag TEXT DEFAULT '',
+            ranking INTEGER DEFAULT 0
         )
     ''')
     conn.commit()
 
     df = pd.read_csv(csv_file)
+    df['color_flag'] = ''  # Initialize color_flag column
+    df['ranking'] = 0      # Initialize ranking column
     df.to_sql('pdf_metadata', conn, if_exists='append', index=False)
     conn.close()
 
@@ -52,3 +56,15 @@ def order_metadata(order_by, order_dir, db_name='metadata.db'):
     metadata = conn.execute(query).fetchall()
     conn.close()
     return metadata
+
+def update_color_flag(metadata_id, color_flag, db_name='metadata.db'):
+    conn = get_db_connection(db_name)
+    conn.execute('UPDATE pdf_metadata SET color_flag = ? WHERE id = ?', (color_flag, metadata_id))
+    conn.commit()
+    conn.close()
+
+def update_ranking(metadata_id, ranking, db_name='metadata.db'):
+    conn = get_db_connection(db_name)
+    conn.execute('UPDATE pdf_metadata SET ranking = ? WHERE id = ?', (ranking, metadata_id))
+    conn.commit()
+    conn.close()
