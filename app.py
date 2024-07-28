@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from database import create_database_from_csv, query_metadata, get_metadata_by_id, filter_metadata
+from database import create_database_from_csv, query_metadata, get_metadata_by_id, filter_metadata, order_metadata
 import argparse
 import os
 
@@ -8,8 +8,10 @@ db_file = 'metadata.db'  # Default database file
 
 @app.route('/')
 def index():
-    metadata = query_metadata(db_file)
-    return render_template('index.html', metadata=metadata)
+    order_by = request.args.get('order_by', 'id')
+    order_dir = request.args.get('order_dir', 'ASC')
+    metadata = order_metadata(order_by, order_dir, db_file)
+    return render_template('index.html', metadata=metadata, order_by=order_by, order_dir=order_dir)
 
 @app.route('/view/<int:metadata_id>')
 def view(metadata_id):

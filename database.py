@@ -45,3 +45,10 @@ def filter_metadata(field, pattern, db_name='metadata.db'):
     metadata = conn.execute(query, ('%' + pattern + '%',)).fetchall()
     conn.close()
     return metadata
+
+def order_metadata(order_by, order_dir, db_name='metadata.db'):
+    conn = get_db_connection(db_name)
+    query = f"SELECT * FROM pdf_metadata ORDER BY {order_by} {order_dir}"
+    metadata = conn.execute(query).fetchall()
+    conn.close()
+    return metadata

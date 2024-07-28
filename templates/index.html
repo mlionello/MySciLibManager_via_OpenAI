@@ -11,13 +11,13 @@
     <table>
         <thead>
             <tr>
-                <th>Title</th>
-                <th>Authors</th>
-                <th>Year</th>
-                <th>Keywords</th>
-                <th>Main Finding</th>
-                <th>Abstract</th>
-                <th>Path</th>
+                <th><a href="{{ url_for('index', order_by='title', order_dir='ASC' if order_by != 'title' else 'DESC') }}">Title</a></th>
+                <th><a href="{{ url_for('index', order_by='authors', order_dir='ASC' if order_by != 'authors' else 'DESC') }}">Authors</a></th>
+                <th><a href="{{ url_for('index', order_by='year', order_dir='ASC' if order_by != 'year' else 'DESC') }}">Year</a></th>
+                <th><a href="{{ url_for('index', order_by='keywords', order_dir='ASC' if order_by != 'keywords' else 'DESC') }}">Keywords</a></th>
+                <th><a href="{{ url_for('index', order_by='main_finding', order_dir='ASC' if order_by != 'main_finding' else 'DESC') }}">Main Finding</a></th>
+                <th><a href="{{ url_for('index', order_by='abstract', order_dir='ASC' if order_by != 'abstract' else 'DESC') }}">Abstract</a></th>
+                <th><a href="{{ url_for('index', order_by='path', order_dir='ASC' if order_by != 'path' else 'DESC') }}">Path</a></th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -30,7 +30,7 @@
                     <td>{{ item['keywords'] }}</td>
                     <td>{{ item['main_finding'] }}</td>
                     <td>{{ item['abstract'] }}</td>
-                    <td>{{ item['path'] }}</td>
+                    <td><a href="{{ item['path'] }}" target="_blank">Link</a></td>
                     <td><a href="{{ url_for('view', metadata_id=item['id']) }}">View</a></td>
                 </tr>
             {% endfor %}
