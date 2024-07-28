@@ -1,0 +1,13 @@
+fitz==0.0.1.dev2
+Flask
+openai==0.28.1
+pandas==2.2.2
+pathlib==1.0.1
+pdfplumber==0.11.2
+pydot==3.0.1
+PyMuPDF==1.24.9
+PyMuPDFb==1.24.9
+PyPDF2==3.0.1
+numpy
+sqlite3
+webbrowser
