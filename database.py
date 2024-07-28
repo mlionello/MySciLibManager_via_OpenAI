@@ -1,5 +1,10 @@
 import sqlite3
 
+def get_db_connection():
+    conn = sqlite3.connect('metadata.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
 def create_database(db_name):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
@@ -18,7 +23,6 @@ def create_database(db_name):
     conn.commit()
     conn.close()
 
-
 def insert_into_database(db_name, pdf_info_list):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
@@ -30,3 +34,15 @@ def insert_into_database(db_name, pdf_info_list):
               pdf_info["One-sentence Abstract"], pdf_info["Path"]))
     conn.commit()
     conn.close()
+
+def query_metadata():
+    conn = get_db_connection()
+    metadata = conn.execute('SELECT * FROM pdf_metadata').fetchall()
+    conn.close()
+    return metadata
+
+def get_metadata_by_id(metadata_id):
+    conn = get_db_connection()
+    metadata = conn.execute('SELECT * FROM pdf_metadata WHERE id = ?', (metadata_id,)).fetchone()
+    conn.close()
+    return metadata
