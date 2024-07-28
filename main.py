@@ -5,7 +5,6 @@ import argparse
 
 from extractor import extract_text_from_pdf, truncate_text
 from metadata import query_llm_for_metadata
-from database import create_database, insert_into_database
 
 # Try to load the API key from environment variables first
 api_key = os.getenv('OPENAI_API_KEY')
@@ -77,12 +76,16 @@ if __name__ == "__main__":
     root_directory = args.root_directory
     output_csv_file = args.output_csv
     log_file = args.log_file
+    base, ext = os.path.splitext(log_file)
+    counter = 1
+    while os.path.exists(log_file):
+        log_file = f"{base}_{counter}{ext}"
+        counter += 1
+
+
     database_file = args.database
 
     pdf_info_list = collect_pdfs_info(root_directory, log_file)
     save_to_csv(pdf_info_list, output_csv_file)
     print(f"\nPDF information saved to {output_csv_file}")
 
-    create_database(database_file)
-    insert_into_database(database_file, pdf_info_list)
-    print(f"PDF information inserted into database {database_file
