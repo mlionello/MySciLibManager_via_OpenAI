@@ -7,9 +7,18 @@ from extractor import extract_text_from_pdf, truncate_text
 from metadata import query_llm_for_metadata
 from database import create_database, insert_into_database
 
-# Set up your OpenAI API key
-openai.api_key = 'sk-proj-MBRBkxaZSfnIajP7jdC9T3BlbkFJcXNlFXvrv94wOMZdQvSh'
+# Try to load the API key from environment variables first
+api_key = os.getenv('OPENAI_API_KEY')
 
+# If the API key is not found in environment variables, load from the local config file
+if not api_key:
+    try:
+        from config import OPENAI_API_KEY
+        api_key = OPENAI_API_KEY
+    except ImportError:
+        raise ImportError("OpenAI API key is not set in environment variables or config.py file.")
+
+openai.api_key = api_key
 
 def collect_pdfs_info(root_dir, log_file):
     pdf_info_list = []
