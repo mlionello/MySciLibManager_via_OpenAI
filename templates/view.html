@@ -12,9 +12,24 @@
     <p><strong>Keywords:</strong> {{ metadata['keywords'] }}</p>
     <p><strong>Main Finding:</strong> {{ metadata['main_finding'] }}</p>
     <p><strong>Abstract:</strong> {{ metadata['abstract'] }}</p>
-    <p><strong>subtopic:</strong> {{ metadata['subtopic'] }}</p>
-    <p><strong>RQ:</strong> {{ metadata['rq'] }}</p>
-    <p><strong>Path:</strong> {{ metadata['path'] }}</p>
+    <p><strong>Path:</strong> <a href="{{ metadata['path'] }}" target="_blank">Link</a></p>
     <p><a href="{{ url_for('index') }}">Back to list</a></p>
+
+    <h2>Additional Fields</h2>
+        {% for key, value in metadata.items() %}
+            {% if key not in ['title', 'authors', 'year', 'keywords', 'main_finding', 'abstract', 'path', 'id', 'color_flag', 'ranking'] %}
+                <p><strong>{{ key }}:</strong> {{ value }}</p>
+            {% endif %}
+        {% endfor %}
+
+    <h2>Add New Key</h2>
+    <form action="{{ url_for('view', metadata_id=metadata['id']) }}" method="post">
+        <input type="hidden" name="metadata_id" value="{{ metadata['id'] }}">
+        <label for="key">Key:</label>
+        <input type="text" id="key" name="key" required>
+        <label for="value">Value:</label>
+        <textarea id="value" name="value" required></textarea>
+        <button type="submit">Add Key</button>
+    </form>
 </body>
 </html>

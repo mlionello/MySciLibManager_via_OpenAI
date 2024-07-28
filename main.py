@@ -31,18 +31,19 @@ def collect_pdfs_info(root_dir, log_file):
     for idx, file_path in enumerate(pdf_files):
         print(f"Processing file {idx + 1}/{total_files}: {os.path.basename(file_path)}", end='\r')
         text = extract_text_from_pdf(file_path)
-        truncated_text = truncate_text(text, max_tokens=1000)
-        title, author, year, keywords, main_finding, abstract, subtopic, rq, result = query_llm_for_metadata(truncated_text)
+        truncated_text = truncate_text(text, max_tokens=4000)
+        title, author, cit, year, keywords, main_finding, abstract, subtopic, rq, result = query_llm_for_metadata(truncated_text)
         pdf_info_list.append({
             "Title": title,
             "Authors": author,
             "Year": year,
+            "Cit": cit,
             "Keywords": keywords,
             "Main_Finding": main_finding,
             "Abstract": abstract,
             "Path": file_path,
-            "subtopic": subtopic,
-            "rq": rq,
+            "Subtopic": subtopic,
+            "RQ": rq,
         })
 
         # Append results to log.txt
@@ -86,4 +87,5 @@ if __name__ == "__main__":
     pdf_info_list = collect_pdfs_info(root_directory, log_file)
     save_to_csv(pdf_info_list, output_csv_file)
     print(f"\nPDF information saved to {output_csv_file}")
+
 

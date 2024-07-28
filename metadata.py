@@ -2,17 +2,18 @@ import openai
 
 def query_llm_for_metadata(text):
     prompt = (
-        "I am interested in how providing analytical or affective information (context) about a music piece does manipulate the "
-        "listening, engagement and emotional experience while listening to that music\n"
-        "Given the following excerpt of a scientific publication, please just fill the following form (no formatting):\n"
+        "My interest is how analytical or affective information and descriptors (context) of a music piece manipulates the "
+        "listening, engagement and emotional experience when listening to that music\n"
+        "Given the following scientific publication, please just fill the following form (no formatting):\n"
         "Title: ###INSERT HERE###\n"
         "Authors: ###INSERT HERE###\n"
+        "In-text Citation (authors, year): ###INSERT HERE###\n"
         "Year of publication: ###INSERT HERE###\n"
         "Keywords: ###INSERT HERE###\n"
         "Main finding: ###INSERT HERE###\n"
-        "One-sentence abstract: ###INSERT HERE###\n"
-        "sub-topic: ###INSERT HERE###\n"
-        "how it fits the research question: ###INSERT HERE###\n"
+        "Two-sentences abstract: ###INSERT HERE###\n"
+        "Subtopic: ###INSERT HERE###\n"
+        "What key message for my research question: ###INSERT HERE###\n"
         "\nText:\n" + text
     )
 
@@ -23,7 +24,7 @@ def query_llm_for_metadata(text):
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=400  # Adjust as needed
+            max_tokens=500  # Adjust as needed
         )
         result = response.choices[0].message['content'].strip().split("\n")
 
@@ -35,14 +36,15 @@ def query_llm_for_metadata(text):
 
         title = extract_field("Title", result)
         author = extract_field("Authors", result)
+        cit = extract_field("In-text Citation (authors, year)", result)
         year = extract_field("Year of publication", result)
         keywords = extract_field("Keywords", result)
         main_finding = extract_field("Main finding", result)
-        abstract = extract_field("One-sentence abstract", result)
-        subtopic = extract_field("sub-topic", result)
-        rq = extract_field("how it fits the research question", result)
+        abstract = extract_field("Two-sentences abstract", result)
+        subtopic = extract_field("Subtopic", result)
+        rq = extract_field("What key message for my research question", result)
 
-        return title, author, year, keywords, main_finding, abstract, subtopic, rq, result
+        return title, author, cit, year, keywords, main_finding, abstract, subtopic, rq, result
     except Exception as e:
         print(f"Error querying LLM: {e}")
-        return "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", []
+        return "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", []

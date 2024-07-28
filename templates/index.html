@@ -36,12 +36,14 @@
                 <th><a href="{{ url_for('index', order_by='title', order_dir='ASC' if order_by != 'title' else 'DESC') }}">Title</a></th>
                 <th><a href="{{ url_for('index', order_by='authors', order_dir='ASC' if order_by != 'authors' else 'DESC') }}">Authors</a></th>
                 <th><a href="{{ url_for('index', order_by='year', order_dir='ASC' if order_by != 'year' else 'DESC') }}">Year</a></th>
-                <th><a href="{{ url_for('index', order_by='keywords', order_dir='ASC' if order_by != 'keywords' else 'DESC') }}">Keywords</a></th>
-                <th><a href="{{ url_for('index', order_by='main_finding', order_dir='ASC' if order_by != 'main_finding' else 'DESC') }}">Main Finding</a></th>
-                <th><a href="{{ url_for('index', order_by='abstract', order_dir='ASC' if order_by != 'abstract' else 'DESC') }}">Abstract</a></th>
-                <th><a href="{{ url_for('index', order_by='path', order_dir='ASC' if order_by != 'path' else 'DESC') }}">Path</a></th>
+                <th>Citation</th>
+                <th>Keywords</th>
+                <th>Main Finding</th>
+                <th>Abstract</th>
+                <th><a href="{{ url_for('index', order_by='parent_directory', order_dir='ASC' if order_by != 'parent_directory' else 'DESC') }}">Parent Directory</a></th>
+                <th>Path</th>
                 <th>Flag</th>
-                <th>Ranking</th>
+                <th><a href="{{ url_for('index', order_by='ranking', order_dir='ASC' if order_by != 'ranking' else 'DESC') }}">Ranking</a></th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -51,9 +53,11 @@
                     <td>{{ item['title'] }}</td>
                     <td>{{ item['authors'] }}</td>
                     <td>{{ item['year'] }}</td>
+                    <td>{{ item['cit'] }}</td>
                     <td>{{ item['keywords'] }}</td>
                     <td>{{ item['main_finding'] }}</td>
                     <td>{{ item['abstract'] }}</td>
+                    <td>{{ item['parent_directory'] }}</td>
                     <td><a href="{{ url_for('serve_file', filename=item['path']) }}" target="_blank">Link</a></td>
                     <td>
                         <form action="{{ url_for('update_flag') }}" method="post">
