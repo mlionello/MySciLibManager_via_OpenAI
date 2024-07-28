@@ -6,7 +6,7 @@ pip install -r requirements
 ### Fit
 **metadatada.py** contains the prompt for openai query
 
-**config.py** you needto specify in this file you api key (OPENAI_API_KEY='abc...')
+**config.py** create and specify your api key here (OPENAI_API_KEY='abc...')
 
 ```
 python main.py /your/path/to/paper/folder/root /your/path/to/save/csv/results.csv
