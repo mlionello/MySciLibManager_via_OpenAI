@@ -1,17 +1,22 @@
 from flask import Flask, render_template, request, redirect, url_for
-from database import create_database_from_csv, query_metadata, get_metadata_by_id, filter_metadata, order_metadata, update_color_flag, update_ranking
+from database import create_database_from_csv, query_metadata, get_metadata_by_id, filter_metadata, order_metadata, update_color_flag, update_star_ranking
 import argparse
 import os
 
 app = Flask(__name__)
 db_file = 'metadata.db'  # Default database file
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    order_by = request.args.get('order_by', 'id')
-    order_dir = request.args.get('order_dir', 'ASC')
-    metadata = order_metadata(order_by, order_dir, db_file)
-    return render_template('index.html', metadata=metadata, order_by=order_by, order_dir=order_dir)
+    if request.method == 'POST':
+        field = request.form['field']
+        pattern = request.form['pattern']
+        metadata = filter_metadata(field, pattern, db_file)
+    else:
+        order_by = request.args.get('order_by', 'id')
+        order_dir = request.args.get('order_dir', 'ASC')
+        metadata = order_metadata(order_by, order_dir, db_file)
+    return render_template('index.html', metadata=metadata)
 
 @app.route('/view/<int:metadata_id>')
 def view(metadata_id):
@@ -19,15 +24,6 @@ def view(metadata_id):
     if metadata is None:
         return "Metadata not found!", 404
     return render_template('view.html', metadata=metadata)
-
-@app.route('/filter', methods=['GET', 'POST'])
-def filter():
-    if request.method == 'POST':
-        field = request.form['field']
-        pattern = request.form['pattern']
-        metadata = filter_metadata(field, pattern, db_file)
-        return render_template('index.html', metadata=metadata)
-    return render_template('filter.html')
 
 @app.route('/update_flag', methods=['POST'])
 def update_flag():
@@ -40,7 +36,7 @@ def update_flag():
 def update_ranking():
     metadata_id = request.form['metadata_id']
     ranking = request.form['ranking']
-    update_ranking(metadata_id, ranking, db_file)
+    update_star_ranking(metadata_id, ranking, db_file)
     return redirect(url_for('index'))
 
 if __name__ == '__main__':

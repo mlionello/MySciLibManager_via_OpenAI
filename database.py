@@ -63,7 +63,7 @@ def update_color_flag(metadata_id, color_flag, db_name='metadata.db'):
     conn.commit()
     conn.close()
 
-def update_ranking(metadata_id, ranking, db_name='metadata.db'):
+def update_star_ranking(metadata_id, ranking, db_name='metadata.db'):
     conn = get_db_connection(db_name)
     conn.execute('UPDATE pdf_metadata SET ranking = ? WHERE id = ?', (ranking, metadata_id))
     conn.commit()
