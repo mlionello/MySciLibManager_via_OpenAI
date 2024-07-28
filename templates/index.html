@@ -54,7 +54,7 @@
                     <td>{{ item['keywords'] }}</td>
                     <td>{{ item['main_finding'] }}</td>
                     <td>{{ item['abstract'] }}</td>
-                    <td><a href="{{ item['path'] }}" target="_blank">Link</a></td>
+                    <td><a href="{{ url_for('serve_file', filename=item['path']) }}" target="_blank">Link</a></td>
                     <td>
                         <form action="{{ url_for('update_flag') }}" method="post">
                             <input type="hidden" name="metadata_id" value="{{ item['id'] }}">

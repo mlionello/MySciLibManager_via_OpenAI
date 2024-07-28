@@ -32,15 +32,17 @@ def collect_pdfs_info(root_dir, log_file):
         print(f"Processing file {idx + 1}/{total_files}: {os.path.basename(file_path)}", end='\r')
         text = extract_text_from_pdf(file_path)
         truncated_text = truncate_text(text, max_tokens=1000)
-        title, author, year, keywords, main_finding, abstract, result = query_llm_for_metadata(truncated_text)
+        title, author, year, keywords, main_finding, abstract, subtopic, rq, result = query_llm_for_metadata(truncated_text)
         pdf_info_list.append({
             "Title": title,
-            "Author(s)": author,
+            "Authors": author,
             "Year": year,
             "Keywords": keywords,
-            "Main Finding": main_finding,
-            "One-sentence Abstract": abstract,
-            "Path": file_path
+            "Main_Finding": main_finding,
+            "Abstract": abstract,
+            "Path": file_path,
+            "subtopic": subtopic,
+            "rq": rq,
         })
 
         # Append results to log.txt
@@ -69,7 +71,6 @@ if __name__ == "__main__":
     parser.add_argument('root_directory', type=str, help='Path to the root directory containing PDF files')
     parser.add_argument('output_csv', type=str, help='Path to the output CSV file')
     parser.add_argument('log_file', type=str, help='Path to the log.txt file where results will be appended')
-    parser.add_argument('database', type=str, help='Path to the SQLite database file')
 
     args = parser.parse_args()
 
@@ -81,9 +82,6 @@ if __name__ == "__main__":
     while os.path.exists(log_file):
         log_file = f"{base}_{counter}{ext}"
         counter += 1
-
-
-    database_file = args.database
 
     pdf_info_list = collect_pdfs_info(root_directory, log_file)
     save_to_csv(pdf_info_list, output_csv_file)

@@ -19,6 +19,8 @@ def create_database_from_csv(csv_file, db_name):
             main_finding TEXT,
             abstract TEXT,
             path TEXT,
+            subtopic TEXT,
+            rq TEXT,
             color_flag TEXT DEFAULT '',
             ranking INTEGER DEFAULT 0
         )

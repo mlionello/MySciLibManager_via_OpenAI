@@ -6,6 +6,14 @@ import os
 app = Flask(__name__)
 db_file = 'metadata.db'  # Default database file
 
+from flask import send_from_directory
+
+@app.route('/files/<path:filename>')
+def serve_file(filename):
+    # Ensure that you use a base directory that is secure and appropriate for your application
+    base_directory = '/'
+    return send_from_directory(base_directory, filename)
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
