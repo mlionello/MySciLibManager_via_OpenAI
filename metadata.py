@@ -1,4 +1,5 @@
 import openai
+import traceback
 
 def query_llm_for_metadata(text):
     prompt = (
@@ -13,7 +14,7 @@ def query_llm_for_metadata(text):
         "Main finding: ###INSERT HERE###\n"
         "Two-sentences abstract: ###INSERT HERE###\n"
         "Subtopic: ###INSERT HERE###\n"
-        "What key message for my research question: ###INSERT HERE###\n"
+        "What key message for my research interest: ###INSERT HERE###\n"
         "\nText:\n" + text
     )
 
@@ -42,9 +43,10 @@ def query_llm_for_metadata(text):
         main_finding = extract_field("Main finding", result)
         abstract = extract_field("Two-sentences abstract", result)
         subtopic = extract_field("Subtopic", result)
-        rq = extract_field("What key message for my research question", result)
+        rq = extract_field("What key message for my research interest", result)
 
         return title, author, cit, year, keywords, main_finding, abstract, subtopic, rq, result
     except Exception as e:
         print(f"Error querying LLM: {e}")
+        print(traceback.format_exc())
         return "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", []

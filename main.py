@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import openai
 import argparse
+import traceback
 
 from extractor import extract_text_from_pdf, truncate_text
 from metadata import query_llm_for_metadata
@@ -13,11 +14,13 @@ api_key = os.getenv('OPENAI_API_KEY')
 if not api_key:
     try:
         from config import OPENAI_API_KEY
+
         api_key = OPENAI_API_KEY
     except ImportError:
         raise ImportError("OpenAI API key is not set in environment variables or config.py file.")
 
 openai.api_key = api_key
+
 
 def collect_pdfs_info(root_dir, log_file):
     pdf_info_list = []
@@ -30,28 +33,37 @@ def collect_pdfs_info(root_dir, log_file):
 
     for idx, file_path in enumerate(pdf_files):
         print(f"Processing file {idx + 1}/{total_files}: {os.path.basename(file_path)}", end='\r')
-        text = extract_text_from_pdf(file_path)
-        truncated_text = truncate_text(text, max_tokens=4000)
-        title, author, cit, year, keywords, main_finding, abstract, subtopic, rq, result = query_llm_for_metadata(truncated_text)
-        pdf_info_list.append({
-            "Title": title,
-            "Authors": author,
-            "Year": year,
-            "Cit": cit,
-            "Keywords": keywords,
-            "Main_Finding": main_finding,
-            "Abstract": abstract,
-            "Path": file_path,
-            "Subtopic": subtopic,
-            "RQ": rq,
-        })
+        try:
+            text = extract_text_from_pdf(file_path)
+            truncated_text = truncate_text(text, max_tokens=4000)
+            title, author, cit, year, keywords, main_finding, abstract, subtopic, rq, result = query_llm_for_metadata(
+                truncated_text)
+            pdf_info_list.append({
+                "Title": title,
+                "Authors": author,
+                "Year": year,
+                "Cit": cit,
+                "Keywords": keywords,
+                "Main_Finding": main_finding,
+                "Abstract": abstract,
+                "Path": file_path,
+                "Subtopic": subtopic,
+                "RQ": rq,
+            })
 
-        # Append results to log.txt
-        with open(log_file, 'a') as log:
-            log.write(f"File: {os.path.basename(file_path)}\n")
-            log.write(f"{result}\n")
-            log.write(f"Path: {file_path}\n")
-            log.write("\n" + "=" * 80 + "\n\n")
+            # Append results to log.txt
+            with open(log_file, 'a') as log:
+                log.write(f"File: {os.path.basename(file_path)}\n")
+                log.write(f"{result}\n")
+                log.write(f"Path: {file_path}\n")
+                log.write("\n" + "=" * 80 + "\n\n")
+
+        except Exception as e:
+            print(f"Error processing file {file_path}: {e}")
+            with open(log_file, 'a') as log:
+                log.write(f"Error processing file: {file_path}\n")
+                log.write(f"Exception: {e}\n")
+                log.write("\n" + "=" * 80 + "\n\n")
 
         # Print progress percentage
         progress = (idx + 1) / total_files * 100
@@ -84,8 +96,12 @@ if __name__ == "__main__":
         log_file = f"{base}_{counter}{ext}"
         counter += 1
 
-    pdf_info_list = collect_pdfs_info(root_directory, log_file)
-    save_to_csv(pdf_info_list, output_csv_file)
-    print(f"\nPDF information saved to {output_csv_file}")
-
-
+    try:
+        pdf_info_list = collect_pdfs_info(root_directory, log_file)
+        save_to_csv(pdf_info_list, output_csv_file)
+        print(f"\nPDF information saved to {output_csv_file}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        with open(log_file, 'a') as log:
+            log.write(f"An error occurred: {e}\n")
+            log.write(traceback.format_exc())
