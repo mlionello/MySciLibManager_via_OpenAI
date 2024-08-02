@@ -27,10 +27,33 @@
         <br><br>
         <button type="submit">Filter</button>
     </form>
+
+    {% set required_fields = ['Title', 'Authors', 'Citation'] %}
+
+    {% set required_fields = ['Title', 'Authors', 'Citation'] %}
+
+    {# Determine display fields #}
+    {% set display_fields = [] %}
+
+    {# Add required fields if they are in db_labels #}
+    {% for field in required_fields %}
+        {% if field in db_labels %}
+            {% set _ = display_fields.append(field) %}
+        {% endif %}
+    {% endfor %}
+
+    {# Add more fields to display_fields if needed to reach length of 5 #}
+    {% for field in db_labels %}
+        {% if field not in display_fields %}
+            {% set _ = display_fields.append(field) %}
+        {% endif %}
+    {% endfor %}
+    {% set  display_fields = display_fields[:5] %}
+
     <table>
         <thead>
             <tr>
-                {% for field in db_labels %}
+                {% for field in display_fields %}
                     <th>
                         <a href="{{ url_for('index', order_by=field, order_dir='ASC' if order_by != field else 'DESC') }}">
                             {{ field | capitalize }}
@@ -47,8 +70,8 @@
         <tbody>
             {% for item in metadata %}
                 <tr style="background-color: {{ item['color_flag'] }}">
-                    {% for field in db_labels %}
-                        <td>{{ item[field] }}</td>
+                    {% for field in display_fields %}
+                        <td>{{ item[field] if field in item else '' }}</td>
                     {% endfor %}
                     <td>{{ item['parent_directory'] }}</td>
                     <td><a href="{{ url_for('serve_file', filename=item['path']) }}" target="_blank">Link</a></td>
