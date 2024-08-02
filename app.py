@@ -1,7 +1,6 @@
 import sqlite3
 import webbrowser
-
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, abort
 from database import create_database_from_csv, query_metadata, get_metadata_by_id, filter_metadata, order_metadata, \
     update_color_flag, update_star_ranking, row_to_dict, get_db_connection, add_key_value
 import argparse
@@ -10,7 +9,6 @@ import os
 app = Flask(__name__)
 db_file = 'metadata.db'  # Default database file
 
-from flask import send_from_directory
 
 @app.route('/files/<path:filename>')
 def serve_file(filename):
