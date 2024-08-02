@@ -36,20 +36,14 @@ def collect_pdfs_info(root_dir, log_file):
         try:
             text = extract_text_from_pdf(file_path)
             truncated_text = truncate_text(text, max_tokens=4000)
-            title, author, cit, year, keywords, main_finding, abstract, subtopic, rq, result = query_llm_for_metadata(
-                truncated_text)
-            pdf_info_list.append({
-                "Title": title,
-                "Authors": author,
-                "Year": year,
-                "Cit": cit,
-                "Keywords": keywords,
-                "Main_Finding": main_finding,
-                "Abstract": abstract,
+            extracted_data, result_lines = query_llm_for_metadata(truncated_text)
+
+            # Prepare the information for the CSV
+            pdf_info = {
                 "Path": file_path,
-                "Subtopic": subtopic,
-                "RQ": rq,
-            })
+                **extracted_data  # Merge extracted data into the dictionary
+            }
+            pdf_info_list.append(pdf_info)
 
             # Append results to log.txt
             with open(log_file, 'a') as log:
