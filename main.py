@@ -36,7 +36,7 @@ def collect_pdfs_info(root_dir, log_file):
         try:
             text = extract_text_from_pdf(file_path)
             truncated_text = truncate_text(text, max_tokens=4000)
-            extracted_data, result_lines = query_llm_for_metadata(truncated_text)
+            extracted_data, result = query_llm_for_metadata(truncated_text)
 
             # Prepare the information for the CSV
             pdf_info = {
