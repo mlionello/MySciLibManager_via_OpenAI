@@ -14,13 +14,11 @@ api_key = os.getenv('OPENAI_API_KEY')
 if not api_key:
     try:
         from config import OPENAI_API_KEY
-
         api_key = OPENAI_API_KEY
     except ImportError:
         raise ImportError("OpenAI API key is not set in environment variables or config.py file.")
 
 openai.api_key = api_key
-
 
 def collect_pdfs_info(root_dir, log_file, existing_data):
     pdf_info_list = []
@@ -30,6 +28,7 @@ def collect_pdfs_info(root_dir, log_file, existing_data):
                  if file.lower().endswith('.pdf')]
 
     total_files = len(pdf_files)
+    updated_data = {}
 
     for idx, file_path in enumerate(pdf_files):
         filename = os.path.basename(file_path)
@@ -37,7 +36,7 @@ def collect_pdfs_info(root_dir, log_file, existing_data):
         if filename in existing_data:
             if existing_data[filename] != file_path:
                 # Update path in existing data
-                existing_data[filename] = file_path
+                updated_data[filename] = file_path
             print(f"Skipping already processed file: {filename}")
             continue
 
@@ -75,8 +74,7 @@ def collect_pdfs_info(root_dir, log_file, existing_data):
               end='\r')
 
     print()  # Print a newline after the last update to ensure the final message is displayed
-    return pdf_info_list, existing_data
-
+    return pdf_info_list, updated_data
 
 def save_to_csv(pdf_info_list, output_csv, updated_data):
     # Create a DataFrame from the new PDF info list
@@ -103,6 +101,7 @@ def save_to_csv(pdf_info_list, output_csv, updated_data):
 
     # Save the combined DataFrame to CSV
     combined_df.to_csv(output_csv, index=False)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Extract metadata from PDFs in a directory.')
