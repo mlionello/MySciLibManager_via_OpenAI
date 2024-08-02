@@ -22,7 +22,7 @@ if not api_key:
 openai.api_key = api_key
 
 
-def collect_pdfs_info(root_dir, log_file, existing_paths):
+def collect_pdfs_info(root_dir, log_file, existing_data):
     pdf_info_list = []
     pdf_files = [os.path.join(dirpath, file)
                  for dirpath, _, filenames in os.walk(root_dir)
@@ -32,11 +32,16 @@ def collect_pdfs_info(root_dir, log_file, existing_paths):
     total_files = len(pdf_files)
 
     for idx, file_path in enumerate(pdf_files):
-        if existing_paths and file_path in existing_paths:
-            print(f"Skipping already processed file: {os.path.basename(file_path)}")
+        filename = os.path.basename(file_path)
+
+        if filename in existing_data:
+            if existing_data[filename] != file_path:
+                # Update path in existing data
+                existing_data[filename] = file_path
+            print(f"Skipping already processed file: {filename}")
             continue
 
-        print(f"Processing file {idx + 1}/{total_files}: {os.path.basename(file_path)}", end='\r')
+        print(f"Processing file {idx + 1}/{total_files}: {filename}", end='\r')
         try:
             text = extract_text_from_pdf(file_path)
             truncated_text = truncate_text(text, max_tokens=4000)
@@ -45,13 +50,14 @@ def collect_pdfs_info(root_dir, log_file, existing_paths):
             # Create pdf_info dictionary with file path and extracted metadata
             pdf_info = {
                 "Path": file_path,
+                "Filename": filename,
                 **extracted_data  # Merge extracted data into the dictionary
             }
             pdf_info_list.append(pdf_info)
 
             # Append results to log.txt
             with open(log_file, 'a') as log:
-                log.write(f"File: {os.path.basename(file_path)}\n")
+                log.write(f"File: {filename}\n")
                 log.write(f"{result}\n")
                 log.write(f"Path: {file_path}\n")
                 log.write("\n" + "=" * 80 + "\n\n")
@@ -65,17 +71,38 @@ def collect_pdfs_info(root_dir, log_file, existing_paths):
 
         # Print progress percentage
         progress = (idx + 1) / total_files * 100
-        print(f"Processing file {idx + 1}/{total_files}: {os.path.basename(file_path)} - Progress: {progress:.2f}%",
+        print(f"Processing file {idx + 1}/{total_files}: {filename} - Progress: {progress:.2f}%",
               end='\r')
 
     print()  # Print a newline after the last update to ensure the final message is displayed
-    return pdf_info_list
+    return pdf_info_list, existing_data
 
 
-def save_to_csv(pdf_info_list, output_csv):
-    df = pd.DataFrame(pdf_info_list)
-    df.to_csv(output_csv, index=False)
+def save_to_csv(pdf_info_list, output_csv, updated_data):
+    # Create a DataFrame from the new PDF info list
+    new_df = pd.DataFrame(pdf_info_list)
 
+    if os.path.exists(output_csv):
+        # Load the existing CSV into a DataFrame
+        existing_df = pd.read_csv(output_csv)
+
+        # Update paths in existing DataFrame based on updated_data
+        if updated_data:
+            for filename, new_path in updated_data.items():
+                if filename in existing_df['Filename'].values:
+                    existing_df.loc[existing_df['Filename'] == filename, 'Path'] = new_path
+
+        # Combine existing and new DataFrames
+        # there should not be duplicated at this point
+        # combined_df = pd.concat([existing_df, new_df]).drop_duplicates(subset=['Filename'])
+        combined_df = pd.concat([existing_df, new_df])
+        combined_df.reset_index(drop=True, inplace=True)
+    else:
+        # If no existing CSV, just use the new DataFrame
+        combined_df = new_df
+
+    # Save the combined DataFrame to CSV
+    combined_df.to_csv(output_csv, index=False)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Extract metadata from PDFs in a directory.')
@@ -97,22 +124,16 @@ if __name__ == "__main__":
         log_file = f"{base}_{counter}{ext}"
         counter += 1
 
-    # Check if CSV exists
+    # Read existing CSV if it exists
     if os.path.exists(output_csv_file):
-        if skip_existing:
-            # Read existing CSV and extract file paths
-            existing_df = pd.read_csv(output_csv_file)
-            existing_paths = set(existing_df["Path"])
-        else:
-            print(
-                f"CSV file {output_csv_file} already exists. Use --skip-existing to skip existing files or use a different file.")
-            exit()
+        existing_df = pd.read_csv(output_csv_file)
+        existing_data = dict(zip(existing_df['Filename'], existing_df['Path']))
     else:
-        existing_paths = None
+        existing_data = {}
 
     try:
-        pdf_info_list = collect_pdfs_info(root_directory, log_file, existing_paths)
-        save_to_csv(pdf_info_list, output_csv_file)
+        pdf_info_list, updated_data = collect_pdfs_info(root_directory, log_file, existing_data)
+        save_to_csv(pdf_info_list, output_csv_file, updated_data)
         print(f"\nPDF information saved to {output_csv_file}")
     except Exception as e:
         print(f"An error occurred: {e}")
