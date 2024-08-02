@@ -117,18 +117,23 @@ if __name__ == "__main__":
     log_file = args.log_file
     skip_existing = args.skip_existing
 
+    # Check if CSV exists
+    if os.path.exists(output_csv_file):
+        if skip_existing:
+            # Read existing CSV and extract file paths
+            existing_df = pd.read_csv(output_csv_file)
+            existing_data = dict(zip(existing_df['Filename'], existing_df['Path']))
+        else:
+            print(f"CSV file {output_csv_file} already exists. Use --skip-existing to skip existing files or use a different file.")
+            exit()
+    else:
+        existing_data = {}
+
     base, ext = os.path.splitext(log_file)
     counter = 1
     while os.path.exists(log_file):
         log_file = f"{base}_{counter}{ext}"
         counter += 1
-
-    # Read existing CSV if it exists
-    if os.path.exists(output_csv_file):
-        existing_df = pd.read_csv(output_csv_file)
-        existing_data = dict(zip(existing_df['Filename'], existing_df['Path']))
-    else:
-        existing_data = {}
 
     try:
         pdf_info_list, updated_data = collect_pdfs_info(root_directory, log_file, existing_data)
