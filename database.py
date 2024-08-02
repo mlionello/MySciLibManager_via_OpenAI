@@ -1,5 +1,6 @@
 import sqlite3
 import pandas as pd
+from config import DB_LABELS
 
 def get_db_connection(db_name='metadata.db'):
     conn = sqlite3.connect(db_name)
@@ -9,28 +10,34 @@ def get_db_connection(db_name='metadata.db'):
 def create_database_from_csv(csv_file, db_name):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
-    cursor.execute('''
+
+    # Build the CREATE TABLE statement dynamically
+    columns_with_types = ', '.join([
+        f"{label} TEXT" for label in DB_LABELS
+    ] + [
+        "id INTEGER PRIMARY KEY AUTOINCREMENT",
+        "color_flag TEXT DEFAULT ''",
+        "ranking INTEGER DEFAULT 0"
+    ])
+
+    create_table_sql = f'''
         CREATE TABLE IF NOT EXISTS pdf_metadata (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT,
-            authors TEXT,
-            year TEXT,
-            cit TEXT,
-            keywords TEXT,
-            main_finding TEXT,
-            abstract TEXT,
-            path TEXT,
-            subtopic TEXT,
-            rq TEXT,
-            color_flag TEXT DEFAULT '',
-            ranking INTEGER DEFAULT 0
+            {columns_with_types}
         )
-    ''')
+    '''
+    cursor.execute(create_table_sql)
     conn.commit()
 
+    # Load the CSV file into a DataFrame
     df = pd.read_csv(csv_file)
-    df['color_flag'] = ''  # Initialize color_flag column
-    df['ranking'] = 0      # Initialize ranking column
+    df.columns = DB_LABELS
+
+    # Initialize color_flag and ranking columns
+    if 'color_flag' not in df.columns:
+        df['color_flag'] = ''
+    if 'ranking' not in df.columns:
+        df['ranking'] = 0
+
     df.to_sql('pdf_metadata', conn, if_exists='append', index=False)
     conn.close()
 

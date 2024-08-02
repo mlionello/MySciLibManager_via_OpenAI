@@ -17,12 +17,9 @@
     <form method="POST">
         <label for="field">Field:</label>
         <select name="field" id="field">
-            <option value="title">Title</option>
-            <option value="authors">Authors</option>
-            <option value="year">Year</option>
-            <option value="keywords">Keywords</option>
-            <option value="main_finding">Main Finding</option>
-            <option value="abstract">Abstract</option>
+            {% for field in db_labels %}
+                <option value="{{ field }}">{{ field | capitalize }}</option>
+            {% endfor %}
         </select>
         <br><br>
         <label for="pattern">Pattern:</label>
@@ -33,13 +30,13 @@
     <table>
         <thead>
             <tr>
-                <th><a href="{{ url_for('index', order_by='title', order_dir='ASC' if order_by != 'title' else 'DESC') }}">Title</a></th>
-                <th><a href="{{ url_for('index', order_by='authors', order_dir='ASC' if order_by != 'authors' else 'DESC') }}">Authors</a></th>
-                <th><a href="{{ url_for('index', order_by='year', order_dir='ASC' if order_by != 'year' else 'DESC') }}">Year</a></th>
-                <th>Citation</th>
-                <th>Keywords</th>
-                <th>Main Finding</th>
-                <th>Abstract</th>
+                {% for field in db_labels %}
+                    <th>
+                        <a href="{{ url_for('index', order_by=field, order_dir='ASC' if order_by != field else 'DESC') }}">
+                            {{ field | capitalize }}
+                        </a>
+                    </th>
+                {% endfor %}
                 <th><a href="{{ url_for('index', order_by='parent_directory', order_dir='ASC' if order_by != 'parent_directory' else 'DESC') }}">Parent Directory</a></th>
                 <th>Path</th>
                 <th>Flag</th>
@@ -50,13 +47,9 @@
         <tbody>
             {% for item in metadata %}
                 <tr style="background-color: {{ item['color_flag'] }}">
-                    <td>{{ item['title'] }}</td>
-                    <td>{{ item['authors'] }}</td>
-                    <td>{{ item['year'] }}</td>
-                    <td>{{ item['cit'] }}</td>
-                    <td>{{ item['keywords'] }}</td>
-                    <td>{{ item['main_finding'] }}</td>
-                    <td>{{ item['abstract'] }}</td>
+                    {% for field in db_labels %}
+                        <td>{{ item[field] }}</td>
+                    {% endfor %}
                     <td>{{ item['parent_directory'] }}</td>
                     <td><a href="{{ url_for('serve_file', filename=item['path']) }}" target="_blank">Link</a></td>
                     <td>

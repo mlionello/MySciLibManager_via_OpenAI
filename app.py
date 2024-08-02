@@ -1,6 +1,8 @@
 import sqlite3
 import webbrowser
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, abort
+
+from config import DB_LABELS
 from database import create_database_from_csv, query_metadata, get_metadata_by_id, filter_metadata, order_metadata, \
     update_color_flag, update_star_ranking, row_to_dict, get_db_connection, add_key_value
 import argparse
@@ -28,7 +30,6 @@ def add_parent_directory(metadata):
         item['parent_directory'] = parent_dir
     return metadata
 
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
     order_by = request.args.get('order_by', 'id')
@@ -42,8 +43,11 @@ def index():
         metadata = order_metadata(order_by, order_dir, db_file)
 
     metadata = add_parent_directory(metadata)
+    static_fields = ['title', 'authors', 'year', 'cit', 'keywords', 'main_finding', 'abstract', 'path', 'color_flag',
+                     'ranking']
 
-    return render_template('index.html', metadata=metadata, order_by=order_by, order_dir=order_dir)
+    return render_template('index.html', metadata=metadata, order_by=order_by, order_dir=order_dir,
+                           static_fields=static_fields, db_labels=DB_LABELS)
 
 
 @app.route('/update_flag', methods=['POST'])
@@ -73,7 +77,11 @@ def view(metadata_id):
     metadata = get_metadata_by_id(metadata_id, db_file)
     if metadata is None:
         return "Metadata not found!", 404
-    return render_template('view.html', metadata=metadata)
+    # List of static fields that are known and should be handled explicitly
+    static_fields = ['title', 'authors', 'year', 'keywords', 'main_finding', 'abstract', 'path', 'id', 'color_flag',
+                     'ranking']
+
+    return render_template('view.html', metadata=metadata, static_fields=static_fields)
 
 
 if __name__ == '__main__':
