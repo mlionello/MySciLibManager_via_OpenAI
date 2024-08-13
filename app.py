@@ -1,3 +1,6 @@
+import argparse
+import webbrowser
+
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, abort
 from werkzeug.utils import secure_filename
 import os
@@ -5,6 +8,7 @@ import sqlite3
 from config import DB_LABELS
 from database import create_database_from_csv, query_metadata, get_metadata_by_id, filter_metadata, order_metadata, \
     update_color_flag, update_star_ranking, row_to_dict, get_db_connection, add_key_value
+from main import collect_pdfs_info, save_to_csv
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'  # Folder to save uploaded files
@@ -73,7 +77,12 @@ def index():
             root_directory = request.form.get('folder_query')
             if os.path.isdir(root_directory):
                 csv_file = os.path.join(root_directory, 'output.csv')
-                generate_csv_from_directory(root_directory, csv_file)
+                log_file = os.path.join(root_directory, 'log.txt')
+                existing_data = {}
+                pdf_info_list, updated_data = collect_pdfs_info(root_directory, log_file, existing_data)
+                save_to_csv(pdf_info_list, csv_file, updated_data)
+                db_file = os.path.join(root_directory, 'output.db')
+                create_database_from_csv(csv_file, db_file)
                 return redirect(url_for('index'))
             return "Directory not found!", 404
     else:
