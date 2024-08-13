@@ -31,6 +31,7 @@ def add_parent_directory(metadata):
         item['parent_directory'] = parent_dir
     return metadata
 
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     global db_file
@@ -39,52 +40,22 @@ def index():
     order_dir = request.args.get('order_dir', 'ASC')
 
     if request.method == 'POST':
+        action = request.form.get('action')
+
+        # Handle the different actions
+        if action == 'load_db':
+            return handle_load_db()
+
+        elif action == 'generate_db':
+            return handle_generate_db()
+
+        elif action == 'generate_csv':
+            return handle_generate_csv()
+
+        # Handle metadata filtering
         field = request.form.get('field', 'title')
         pattern = request.form.get('pattern', '')
         metadata = filter_metadata(field, pattern, db_file)
-        action = request.form.get('action')
-
-        if action == 'load_db':
-            if 'db_file' not in request.files:
-                return "No file part", 400
-            file = request.files['db_file']
-            if file.filename == '':
-                return "No selected file", 400
-            if file and file.filename.endswith('.db'):
-                filename = secure_filename(file.filename)
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(file_path)
-                db_file = file_path
-                return redirect(url_for('index'))
-            return "Invalid file format. Please upload a .db file.", 400
-
-        elif action == 'generate_db':
-            if 'csv_file' not in request.files:
-                return "No file part", 400
-            file = request.files['csv_file']
-            if file.filename == '':
-                return "No selected file", 400
-            if file and file.filename.endswith('.csv'):
-                filename = secure_filename(file.filename)
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(file_path)
-                db_file = os.path.splitext(file_path)[0] + '.db'
-                create_database_from_csv(file_path, db_file)
-                return redirect(url_for('index'))
-            return "Invalid file format. Please upload a .csv file.", 400
-
-        elif action == 'generate_csv':
-            root_directory = request.form.get('folder_query')
-            if os.path.isdir(root_directory):
-                csv_file = os.path.join(root_directory, 'output.csv')
-                log_file = os.path.join(root_directory, 'log.txt')
-                existing_data = {}
-                pdf_info_list, updated_data = collect_pdfs_info(root_directory, log_file, existing_data)
-                save_to_csv(pdf_info_list, csv_file, updated_data)
-                db_file = os.path.join(root_directory, 'output.db')
-                create_database_from_csv(csv_file, db_file)
-                return redirect(url_for('index'))
-            return "Directory not found!", 404
     else:
         metadata = order_metadata(order_by, order_dir, db_file) if db_file else []
 
@@ -94,6 +65,58 @@ def index():
 
     return render_template('index.html', metadata=metadata, order_by=order_by, order_dir=order_dir,
                            static_fields=static_fields, db_labels=DB_LABELS, db_file=db_file)
+
+
+def handle_load_db():
+    """Handles loading an existing database."""
+    if 'db_file' not in request.files:
+        return "No file part", 400
+    file = request.files['db_file']
+    if file.filename == '':
+        return "No selected file", 400
+    if file and file.filename.endswith('.db'):
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+        global db_file
+        db_file = file_path
+        return redirect(url_for('index'))
+    return "Invalid file format. Please upload a .db file.", 400
+
+
+def handle_generate_db():
+    """Handles generating a database from a CSV file."""
+    if 'csv_file' not in request.files:
+        return "No file part", 400
+    file = request.files['csv_file']
+    if file.filename == '':
+        return "No selected file", 400
+    if file and file.filename.endswith('.csv'):
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+        global db_file
+        db_file = os.path.splitext(file_path)[0] + '.db'
+        create_database_from_csv(file_path, db_file)
+        return redirect(url_for('index'))
+    return "Invalid file format. Please upload a .csv file.", 400
+
+
+def handle_generate_csv():
+    """Handles generating a CSV file from a directory and creating a database."""
+    root_directory = request.form.get('folder_query')
+    if os.path.isdir(root_directory):
+        csv_file = os.path.join(root_directory, 'output.csv')
+        log_file = os.path.join(root_directory, 'log.txt')
+        existing_data = {}
+        pdf_info_list, updated_data = collect_pdfs_info(root_directory, log_file, existing_data)
+        save_to_csv(pdf_info_list, csv_file, updated_data)
+        global db_file
+        db_file = os.path.join(root_directory, 'output.db')
+        create_database_from_csv(csv_file, db_file)
+        return redirect(url_for('index'))
+    return "Directory not found!", 404
+
 
 @app.route('/update_flag', methods=['POST'])
 def update_flag():
