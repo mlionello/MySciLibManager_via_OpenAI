@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>PDF Metadata</title>
+    <title>PDF Metadata Manager</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script>
         function submitRanking(metadataId, ranking) {
@@ -13,91 +13,107 @@
     </script>
 </head>
 <body>
-    <h1>PDF Metadata</h1>
-    <form method="POST">
-        <label for="field">Field:</label>
-        <select name="field" id="field">
-            {% for field in db_labels %}
-                <option value="{{ field }}">{{ field | capitalize }}</option>
-            {% endfor %}
-        </select>
+    <h1>PDF Metadata Manager</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        <h2>Database Operations</h2>
+
+        <label for="db_file_input">Load Existing Database:</label>
+        <input type="file" id="db_file_input" name="db_file" accept=".db">
+        <button type="submit" name="action" value="load_db">Load Database</button>
         <br><br>
-        <label for="pattern">Pattern:</label>
-        <input type="text" id="pattern" name="pattern" required>
+
+        <label for="csv_file_input">Generate Database from CSV:</label>
+        <input type="file" id="csv_file_input" name="csv_file" accept=".csv">
+        <button type="submit" name="action" value="generate_db">Generate Database</button>
         <br><br>
-        <button type="submit">Filter</button>
+
+        <label for="folder_query">Directory Path:</label>
+        <input type="text" id="folder_query" name="folder_query" placeholder="Enter directory path">
+        <button type="submit" name="action" value="generate_csv">Generate CSV</button>
     </form>
 
-    {% set required_fields = ['Title', 'Authors', 'Citation'] %}
-
-    {% set required_fields = ['Title', 'Authors', 'Citation'] %}
-
-    {# Determine display fields #}
-    {% set display_fields = [] %}
-
-    {# Add required fields if they are in db_labels #}
-    {% for field in required_fields %}
-        {% if field in db_labels %}
-            {% set _ = display_fields.append(field) %}
-        {% endif %}
-    {% endfor %}
-
-    {# Add more fields to display_fields if needed to reach length of 5 #}
-    {% for field in db_labels %}
-        {% if field not in display_fields %}
-            {% set _ = display_fields.append(field) %}
-        {% endif %}
-    {% endfor %}
-    {% set  display_fields = display_fields[:5] %}
-
-    <table>
-        <thead>
-            <tr>
-                {% for field in display_fields %}
-                    <th>
-                        <a href="{{ url_for('index', order_by=field, order_dir='ASC' if order_by != field else 'DESC') }}">
-                            {{ field | capitalize }}
-                        </a>
-                    </th>
+    {% if metadata %}
+        <h1>PDF Metadata</h1>
+        <form method="POST">
+            <label for="field">Field:</label>
+            <select name="field" id="field">
+                {% for field in db_labels %}
+                    <option value="{{ field }}">{{ field | capitalize }}</option>
                 {% endfor %}
-                <th><a href="{{ url_for('index', order_by='parent_directory', order_dir='ASC' if order_by != 'parent_directory' else 'DESC') }}">Parent Directory</a></th>
-                <th>Path</th>
-                <th>Flag</th>
-                <th><a href="{{ url_for('index', order_by='ranking', order_dir='ASC' if order_by != 'ranking' else 'DESC') }}">Ranking</a></th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in metadata %}
-                <tr style="background-color: {{ item['color_flag'] }}">
-                    {% for field in display_fields %}
-                        <td>{{ item[field] if field in item else '' }}</td>
-                    {% endfor %}
-                    <td>{{ item['parent_directory'] }}</td>
-                    <td><a href="{{ url_for('serve_file', filename=item['path']) }}" target="_blank">Link</a></td>
-                    <td>
-                        <form action="{{ url_for('update_flag') }}" method="post">
-                            <input type="hidden" name="metadata_id" value="{{ item['id'] }}">
-                            <input type="color" name="color_flag" value="{{ item['color_flag'] }}">
-                            <button type="submit">Update</button>
-                        </form>
-                    </td>
-                    <td>
-                        <div>
-                            {% for i in range(1, 6) %}
-                                <span style="cursor: pointer; color: {{ 'gold' if item['ranking'] >= i else 'gray' }};" onclick="submitRanking('{{ item['id'] }}', '{{ i }}')">&#9733;</span>
-                            {% endfor %}
-                        </div>
-                    </td>
-                    <td><a href="{{ url_for('view', metadata_id=item['id']) }}">View</a></td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </select>
+            <br><br>
+            <label for="pattern">Pattern:</label>
+            <input type="text" id="pattern" name="pattern" required>
+            <br><br>
+            <button type="submit">Filter</button>
+        </form>
 
-    <form id="rankingForm" action="{{ url_for('update_ranking') }}" method="post" style="display: none;">
-        <input type="hidden" id="metadata_id" name="metadata_id">
-        <input type="hidden" id="ranking" name="ranking">
-    </form>
+        {% set required_fields = ['title', 'authors', 'year', 'cit', 'keywords', 'main_finding', 'abstract', 'path', 'color_flag', 'ranking'] %}
+        {% set display_fields = [] %}
+
+        {% for field in required_fields %}
+            {% if field in db_labels %}
+                {% set _ = display_fields.append(field) %}
+            {% endif %}
+        {% endfor %}
+
+        {% for field in db_labels %}
+            {% if field not in display_fields %}
+                {% set _ = display_fields.append(field) %}
+            {% endif %}
+        {% endfor %}
+        {% set display_fields = display_fields[:5] %}
+
+        <table>
+            <thead>
+                <tr>
+                    {% for field in display_fields %}
+                        <th>
+                            <a href="{{ url_for('index', order_by=field, order_dir='ASC' if order_by != field else 'DESC') }}">
+                                {{ field | capitalize }}
+                            </a>
+                        </th>
+                    {% endfor %}
+                    <th><a href="{{ url_for('index', order_by='parent_directory', order_dir='ASC' if order_by != 'parent_directory' else 'DESC') }}">Parent Directory</a></th>
+                    <th>Path</th>
+                    <th>Flag</th>
+                    <th><a href="{{ url_for('index', order_by='ranking', order_dir='ASC' if order_by != 'ranking' else 'DESC') }}">Ranking</a></th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in metadata %}
+                    <tr style="background-color: {{ item['color_flag'] }}">
+                        {% for field in display_fields %}
+                            <td>{{ item[field] if field in item else '' }}</td>
+                        {% endfor %}
+                        <td>{{ item['parent_directory'] }}</td>
+                        <td><a href="{{ url_for('serve_file', filename=item['path']) }}" target="_blank">Link</a></td>
+                        <td>
+                            <form action="{{ url_for('update_flag') }}" method="post">
+                                <input type="hidden" name="metadata_id" value="{{ item['id'] }}">
+                                <input type="color" name="color_flag" value="{{ item['color_flag'] }}">
+                                <button type="submit">Update</button>
+                            </form>
+                        </td>
+                        <td>
+                            <div>
+                                {% for i in range(1, 6) %}
+                                    <span style="cursor: pointer; color: {{ 'gold' if item['ranking'] >= i else 'gray' }};" onclick="submitRanking('{{ item['id'] }}', '{{ i }}')">&#9733;</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td><a href="{{ url_for('view', metadata_id=item['id']) }}">View</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <form id="rankingForm" action="{{ url_for('update_ranking') }}" method="post" style="display: none;">
+            <input type="hidden" id="metadata_id" name="metadata_id">
+            <input type="hidden" id="ranking" name="ranking">
+        </form>
+    {% endif %}
 </body>
 </html>
