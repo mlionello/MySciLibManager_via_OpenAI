@@ -1,3 +1,5 @@
-./config.py
+config.py
 *.db
 *.csv
+*.json
+/progress.json
