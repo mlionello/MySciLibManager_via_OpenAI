@@ -8,6 +8,8 @@ from config import DB_LABELS
 from database import create_database_from_csv, get_metadata_by_id, filter_metadata, order_metadata, \
     update_color_flag, update_star_ranking, row_to_dict, add_key_value
 from main import collect_pdfs_info, save_to_csv
+import json
+
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'  # Folder to save uploaded files
@@ -18,6 +20,16 @@ def serve_file(filename):
     # Ensure that you use a base directory that is secure and appropriate for your application
     base_directory = '/'
     return send_from_directory(base_directory, filename)
+
+@app.route('/progress')
+def progress():
+    try:
+        with open('progress.json', 'r') as progress_file:
+            progress = json.load(progress_file)
+    except FileNotFoundError:
+        progress = {'current': 0, 'total': 0}
+
+    return progress
 
 def add_parent_directory(metadata):
     for item in metadata:

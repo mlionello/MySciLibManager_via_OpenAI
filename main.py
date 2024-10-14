@@ -20,6 +20,19 @@ if not api_key:
 
 openai.api_key = api_key
 
+import json
+import time
+
+progress_file_path = 'progress.json'  # This will store progress data
+
+def update_progress(current, total):
+    progress = {
+        'current': current,
+        'total': total
+    }
+    with open(progress_file_path, 'w') as progress_file:
+        json.dump(progress, progress_file)
+
 def collect_pdfs_info(root_dir, log_file, existing_data):
     pdf_info_list = []
     pdf_files = [os.path.join(dirpath, file)
@@ -68,12 +81,14 @@ def collect_pdfs_info(root_dir, log_file, existing_data):
                 log.write(f"Exception: {e}\n")
                 log.write("\n" + "=" * 80 + "\n\n")
 
-        # Print progress percentage
+        # Update progress
+        update_progress(idx + 1, total_files)
         progress = (idx + 1) / total_files * 100
         print(f"Processing file {idx + 1}/{total_files}: {filename} - Progress: {progress:.2f}%",
               end='\r')
 
     print()  # Print a newline after the last update to ensure the final message is displayed
+    update_progress(total_files, total_files)  # Ensure progress is complete
     return pdf_info_list, updated_data
 
 def save_to_csv(pdf_info_list, output_csv, updated_data):

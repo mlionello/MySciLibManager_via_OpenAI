@@ -10,6 +10,29 @@
             document.getElementById('ranking').value = ranking;
             document.getElementById('rankingForm').submit();
         }
+
+        function updateProgress() {
+            fetch('/progress')
+                .then(response => response.json())
+                .then(data => {
+                    const progressBar = document.getElementById('progressBar');
+                    const progressText = document.getElementById('progressText');
+                    if (data.total > 0) {
+                        const progressPercentage = (data.current / data.total) * 100;
+                        progressBar.value = progressPercentage;
+                        progressText.textContent = `Processed ${data.current} of ${data.total} files`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching progress:', error);
+                });
+        }
+
+        function startProgressPolling() {
+            setInterval(updateProgress, 1000); // Update progress every second
+        }
+
+        window.onload = startProgressPolling;
     </script>
 </head>
 <body>
@@ -32,7 +55,11 @@
         <input type="text" id="folder_query" name="folder_query" placeholder="Enter directory path">
         <button type="submit" name="action" value="generate_csv">Generate CSV</button>
     </form>
-
+    <div id="progressContainer">
+        <h3>Progress</h3>
+        <progress id="progressBar" value="0" max="100"></progress>
+        <p id="progressText">Waiting for process to start...</p>
+    </div>
     {% if metadata %}
         <h1>PDF Metadata</h1>
         <form method="POST">
