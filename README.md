@@ -1,6 +1,6 @@
 ### Install and requirements:
 ```
-git clone git@github.com:mlionello/lit_review.git
+git clone git@github.com:mlionello/MySciLibManager_via_OpenAI.git
 pip install -r requirements
 ```
 ### Configuration:
