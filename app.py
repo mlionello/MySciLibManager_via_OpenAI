@@ -1,13 +1,12 @@
-import argparse
 import webbrowser
 
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, abort
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
 import os
 import sqlite3
 from config import DB_LABELS
-from database import create_database_from_csv, query_metadata, get_metadata_by_id, filter_metadata, order_metadata, \
-    update_color_flag, update_star_ranking, row_to_dict, get_db_connection, add_key_value
+from database import create_database_from_csv, get_metadata_by_id, filter_metadata, order_metadata, \
+    update_color_flag, update_star_ranking, row_to_dict, add_key_value
 from main import collect_pdfs_info, save_to_csv
 
 app = Flask(__name__)
@@ -16,11 +15,9 @@ db_file = None  # Default database file
 
 @app.route('/files/<path:filename>')
 def serve_file(filename):
-    base_directory = app.config['UPLOAD_FOLDER']
-    try:
-        return send_from_directory(base_directory, filename)
-    except FileNotFoundError:
-        abort(404)
+    # Ensure that you use a base directory that is secure and appropriate for your application
+    base_directory = '/'
+    return send_from_directory(base_directory, filename)
 
 def add_parent_directory(metadata):
     for item in metadata:
@@ -60,7 +57,7 @@ def index():
         metadata = order_metadata(order_by, order_dir, db_file) if db_file else []
 
     metadata = add_parent_directory(metadata)
-    static_fields = ['title', 'authors', 'year', 'cit', 'keywords', 'main_finding', 'abstract', 'path', 'color_flag',
+    static_fields = ['title', 'cit', 'keywords', 'main_finding', 'abstract', 'color_flag',
                      'ranking']
 
     return render_template('index.html', metadata=metadata, order_by=order_by, order_dir=order_dir,
@@ -153,15 +150,9 @@ def view(metadata_id):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='Run Flask web application with SQLite database created from CSV file.')
-    parser.add_argument('csv_file', type=str, help='Path to the CSV file')
-    parser.add_argument('--db_file', type=str, default='metadata.db',
-                        help='Name of the SQLite database file (default: metadata.db)')
 
-    args = parser.parse_args()
-    csv_file = args.csv_file
-    db_file = args.db_file
+    csv_file = '/home/matteo/tmp_dataset.csv'
+    db_file = ''
 
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])

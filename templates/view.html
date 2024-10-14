@@ -7,12 +7,12 @@
 </head>
 <body>
     <h1>{{ metadata['title'] }}</h1>
-    <p><strong>Authors:</strong> {{ metadata['authors'] }}</p>
-    <p><strong>Year:</strong> {{ metadata['year'] }}</p>
-    <p><strong>Keywords:</strong> {{ metadata['keywords'] }}</p>
-    <p><strong>Main Finding:</strong> {{ metadata['main_finding'] }}</p>
-    <p><strong>Abstract:</strong> {{ metadata['abstract'] }}</p>
-    <p><strong>Path:</strong> <a href="{{ metadata['path'] }}" target="_blank">Link</a></p>
+    <p><strong>Authors:</strong> {{ metadata['Authors'] }}</p>
+    <p><strong>Year:</strong> {{ metadata['Year'] }}</p>
+    <p><strong>Keywords:</strong> {{ metadata['Keywords'] }}</p>
+    <p><strong>Main Finding:</strong> {{ metadata['Findings'] }}</p>
+    <p><strong>Abstract:</strong> {{ metadata['ShortAbstract'] }}</p>
+    <p><strong>Path:</strong> <a href="{{ url_for('serve_file', filename=metadata['Path']) }}" target="_blank">Link</a></p>
     <p><a href="{{ url_for('index') }}">Back to list</a></p>
 
     <h2>Additional Fields</h2>

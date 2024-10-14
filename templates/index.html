@@ -49,7 +49,7 @@
             <button type="submit">Filter</button>
         </form>
 
-        {% set required_fields = ['title', 'authors', 'year', 'cit', 'keywords', 'main_finding', 'abstract', 'path', 'color_flag', 'ranking'] %}
+        {% set required_fields = ['Title', 'Citation', 'Keywords', 'Findings', 'ShortAbstract','color_flag', 'ranking'] %}
         {% set display_fields = [] %}
 
         {% for field in required_fields %}
@@ -89,7 +89,7 @@
                             <td>{{ item[field] if field in item else '' }}</td>
                         {% endfor %}
                         <td>{{ item['parent_directory'] }}</td>
-                        <td><a href="{{ url_for('serve_file', filename=item['path']) }}" target="_blank">Link</a></td>
+                        <td><a href="{{ url_for('serve_file', filename=item['Path']) }}" target="_blank">Link</a></td>
                         <td>
                             <form action="{{ url_for('update_flag') }}" method="post">
                                 <input type="hidden" name="metadata_id" value="{{ item['id'] }}">
