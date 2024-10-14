@@ -3,3 +3,4 @@ config.py
 *.csv
 *.json
 /progress.json
+.idea
