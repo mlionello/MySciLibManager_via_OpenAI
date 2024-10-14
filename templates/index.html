@@ -41,9 +41,9 @@
     <form method="POST" enctype="multipart/form-data">
         <h2>Database Operations</h2>
 
-        <label for="db_file_input">Load Existing Database:</label>
-        <input type="file" id="db_file_input" name="db_file" accept=".db">
-        <button type="submit" name="action" value="load_db">Load Database</button>
+        <label for="folder_query">Directory Path:</label>
+        <input type="text" id="folder_query" name="folder_query" placeholder="Enter directory path">
+        <button type="submit" name="action" value="generate_csv">Generate CSV</button>
         <br><br>
 
         <label for="csv_file_input">Generate Database from CSV:</label>
@@ -51,9 +51,10 @@
         <button type="submit" name="action" value="generate_db">Generate Database</button>
         <br><br>
 
-        <label for="folder_query">Directory Path:</label>
-        <input type="text" id="folder_query" name="folder_query" placeholder="Enter directory path">
-        <button type="submit" name="action" value="generate_csv">Generate CSV</button>
+        <label for="db_file_input">Load Existing Database:</label>
+        <input type="file" id="db_file_input" name="db_file" accept=".db">
+        <button type="submit" name="action" value="load_db">Load Database</button>
+
     </form>
     <div id="progressContainer">
         <h3>Progress</h3>
@@ -76,7 +77,7 @@
             <button type="submit">Filter</button>
         </form>
 
-        {% set required_fields = ['Title', 'Citation', 'Keywords', 'Findings', 'ShortAbstract','color_flag', 'ranking'] %}
+        {% set required_fields = ['Title', 'Citation', 'Keywords', 'Findings', 'ShortAbstract', 'color_flag', 'ranking'] %}
         {% set display_fields = [] %}
 
         {% for field in required_fields %}
