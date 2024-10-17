@@ -16,7 +16,7 @@ app.config['UPLOAD_FOLDER'] = 'uploads'  # Folder to save uploaded files
 db_file = None  # Default database file
 
 static_fields = ['Title', 'Citation', 'Keywords', 'Findings', 'ShortAbstract', 'color_flag', 'ranking']
-top_fields_view = ['Year', 'Authors', 'Keywords', 'Findings', 'ShortAbstract']
+top_fields_view = ['Year', 'Authors', 'Keywords', 'Findings', 'ShortAbstract'] # title is already separately included within h1 tag in view
 
 @app.route('/files/<path:filename>')
 def serve_file(filename):
