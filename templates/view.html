@@ -7,17 +7,15 @@
 </head>
 <body>
     <h1>{{ metadata['Title'] }}</h1>
-    <p><strong>Authors:</strong> {{ metadata['Authors'] }}</p>
-    <p><strong>Year:</strong> {{ metadata['Year'] }}</p>
-    <p><strong>Keywords:</strong> {{ metadata['Keywords'] }}</p>
-    <p><strong>Main Finding:</strong> {{ metadata['Findings'] }}</p>
-    <p><strong>Abstract:</strong> {{ metadata['ShortAbstract'] }}</p>
+    {% for label in top_fields_view %}
+    <p><strong>{{ label }}:</strong> {{ metadata[label] }}</p>
+    {% endfor %}
     <p><strong>Path:</strong> <a href="{{ url_for('serve_file', filename=metadata['Path']) }}" target="_blank">Link</a></p>
     <p><a href="{{ url_for('index') }}">Back to list</a></p>
 
     <h2>Additional Fields</h2>
         {% for key, value in metadata.items() %}
-            {% if key not in ['Title', 'Authors', 'year', 'Keywords', 'Findings', 'ShortAbstract', 'Path', 'id', 'color_flag', 'ranking'] %}
+            {% if key not in top_fields_view and key not in ['Title', 'Path', 'id', 'color_flag', 'ranking'] %}
                 <p><strong>{{ key }}:</strong> {{ value }}</p>
             {% endif %}
         {% endfor %}

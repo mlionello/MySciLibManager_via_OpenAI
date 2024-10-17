@@ -16,6 +16,7 @@ app.config['UPLOAD_FOLDER'] = 'uploads'  # Folder to save uploaded files
 db_file = None  # Default database file
 
 static_fields = ['Title', 'Citation', 'Keywords', 'Findings', 'ShortAbstract', 'color_flag', 'ranking']
+top_fields_view = ['Year', 'Authors', 'Keywords', 'Findings', 'ShortAbstract']
 
 @app.route('/files/<path:filename>')
 def serve_file(filename):
@@ -149,15 +150,14 @@ def view(metadata_id):
         new_key = request.form.get('key')
         new_value = request.form.get('value')
         add_key_value(metadata_id, new_key, new_value, db_file)
-        return redirect(url_for('view', metadata_id=metadata_id))
+        return redirect(url_for('view', metadata_id=metadata_id, top_fields_view=top_fields_view))
 
     metadata = get_metadata_by_id(metadata_id, db_file)
     if metadata is None:
         return "Metadata not found!", 404
     # List of static fields that are known and should be handled explicitly
-    static_fields = ['Title', 'Citation', 'Keywords', 'Findings', 'ShortAbstract', 'color_flag', 'ranking']
 
-    return render_template('view.html', metadata=metadata, static_fields=static_fields)
+    return render_template('view.html', metadata=metadata, top_fields_view=top_fields_view)
 
 
 if __name__ == '__main__':
