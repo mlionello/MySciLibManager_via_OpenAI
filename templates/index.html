@@ -77,10 +77,9 @@
             <button type="submit">Filter</button>
         </form>
 
-        {% set required_fields = ['Title', 'Citation', 'Keywords', 'Findings', 'ShortAbstract', 'color_flag', 'ranking'] %}
         {% set display_fields = [] %}
 
-        {% for field in required_fields %}
+        {% for field in static_fields %}
             {% if field in db_labels %}
                 {% set _ = display_fields.append(field) %}
             {% endif %}

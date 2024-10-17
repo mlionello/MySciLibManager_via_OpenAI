@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>{{ metadata['title'] }}</h1>
+    <h1>{{ metadata['Title'] }}</h1>
     <p><strong>Authors:</strong> {{ metadata['Authors'] }}</p>
     <p><strong>Year:</strong> {{ metadata['Year'] }}</p>
     <p><strong>Keywords:</strong> {{ metadata['Keywords'] }}</p>
@@ -17,7 +17,7 @@
 
     <h2>Additional Fields</h2>
         {% for key, value in metadata.items() %}
-            {% if key not in ['title', 'authors', 'year', 'keywords', 'main_finding', 'abstract', 'path', 'id', 'color_flag', 'ranking'] %}
+            {% if key not in ['Title', 'Authors', 'year', 'Keywords', 'Findings', 'ShortAbstract', 'Path', 'id', 'color_flag', 'ranking'] %}
                 <p><strong>{{ key }}:</strong> {{ value }}</p>
             {% endif %}
         {% endfor %}

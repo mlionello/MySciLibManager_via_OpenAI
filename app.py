@@ -15,6 +15,8 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'  # Folder to save uploaded files
 db_file = None  # Default database file
 
+static_fields = ['Title', 'Citation', 'Keywords', 'Findings', 'ShortAbstract', 'color_flag', 'ranking']
+
 @app.route('/files/<path:filename>')
 def serve_file(filename):
     # Ensure that you use a base directory that is secure and appropriate for your application
@@ -69,8 +71,6 @@ def index():
         metadata = order_metadata(order_by, order_dir, db_file) if db_file else []
 
     metadata = add_parent_directory(metadata)
-    static_fields = ['title', 'cit', 'keywords', 'main_finding', 'abstract', 'color_flag',
-                     'ranking']
 
     return render_template('index.html', metadata=metadata, order_by=order_by, order_dir=order_dir,
                            static_fields=static_fields, db_labels=DB_LABELS, db_file=db_file)
@@ -155,8 +155,7 @@ def view(metadata_id):
     if metadata is None:
         return "Metadata not found!", 404
     # List of static fields that are known and should be handled explicitly
-    static_fields = ['title', 'authors', 'year', 'keywords', 'main_finding', 'abstract', 'path', 'id', 'color_flag',
-                     'ranking']
+    static_fields = ['Title', 'Citation', 'Keywords', 'Findings', 'ShortAbstract', 'color_flag', 'ranking']
 
     return render_template('view.html', metadata=metadata, static_fields=static_fields)
 
