@@ -9,7 +9,6 @@ PyMuPDF==1.24.9
 PyMuPDFb==1.24.9
 PyPDF2==3.0.1
 numpy
-sqlite3
 webbrowser
 
 werkzeug~=3.0.3
