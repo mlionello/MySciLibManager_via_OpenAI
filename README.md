@@ -18,7 +18,7 @@ in case you want more inputs to be read from your library
 ```
 python app.py 
 ```
-if not done automatically, please navigate with your most favourite web browser to *http://localhost:5000*
+if not done automatically, please navigate with your most favourite web browser to **http://localhost:5000** *or* **http://127.0.0.1:5000**
 
 ### Run!
 Generate a CSV by reading all the pdfs in the subdirs of a specific parent folder
