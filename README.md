@@ -1,7 +1,10 @@
 ### Install and requirements:
 ```
 git clone git@github.com:mlionello/MySciLibManager_via_OpenAI.git
-pip install -r requirements
+conda create -n lib python==3.10
+conda activate lib
+cd MySciLibManager_via_OpenAI
+pip install -r requirements.txt
 ```
 ### Configuration:
 modify config.py by inserting your openai api key, and the prompt for GPT models
