@@ -1,3 +1,5 @@
+-- it requires python 3.10 --
+
 ### Install and requirements:
 ```
 git clone git@github.com:mlionello/MySciLibManager_via_OpenAI.git
@@ -12,7 +14,8 @@ modify main.py at line 59:
 ```
 truncated_text = truncate_text(text, max_tokens=4000)
 ```
-in case you want more inputs to be read from your library
+in case you want more inputs to be read from your library.
+Do change max_tokens higher than 10-15k to be sure all the content of the article is read
 
 ### Launch GUI
 ```
